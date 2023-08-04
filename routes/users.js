@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+const mongoose = require('mongoose');
 
 const {
   requireAuth,
@@ -8,22 +9,46 @@ const {
 const {
   getUsers,
 } = require('../controller/users');
+const { MongoClient } = require('mongodb');
 
-const initAdminUser = (app, next) => {
-  const { adminEmail, adminPassword } = app.get('config');
+const userSchema = new mongoose.Schema({
+  email: { type: String, required: true },
+  password: { type: String, required: true },
+  role: { type: String, required: false },
+});
+
+const User = mongoose.model('User', userSchema);
+
+const initAdminUser = async (app, next) => {
+  const { adminEmail, adminPassword, dbUrl } = app.get('config');
   if (!adminEmail || !adminPassword) {
     return next();
   }
 
-  const adminUser = {
-    email: adminEmail,
-    password: bcrypt.hashSync(adminPassword, 10),
-    roles: { admin: true },
-  };
+  try {
+    const client = new MongoClient(dbUrl);
+    await client.connect();
+    const db = client.db();
+    const usersCollection = db.collection('users');
+    const adminUser = await usersCollection.findOne({ email: adminEmail });
+    console.log(adminUser, 'aqui adminuser');
 
-  // TODO: crear usuaria admin
-  // Primero ver si ya existe adminUser en base de datos
-  // si no existe, hay que guardarlo
+    if (!adminUser) {
+      const hashedPassword = await bcrypt.hash(adminPassword, 10);
+      const newAdminUser = new User({
+        email: adminEmail,
+        password: hashedPassword,
+        role: 'admin',
+      });
+
+      await newAdminUser.save();
+      console.log('Exito');
+    } else {
+      console.log('El user ya existe');
+    }
+  } catch (err) {
+    console.error(err, 'error');
+  }
 
   next();
 };
