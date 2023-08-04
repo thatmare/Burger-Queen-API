@@ -1,5 +1,5 @@
 const express = require('express');
-const { MongoClient } = require('mongodb');
+// const { MongoClient } = require('mongodb');
 const config = require('./config');
 const authMiddleware = require('./middleware/auth');
 const errorHandler = require('./middleware/error');
@@ -8,6 +8,7 @@ const pkg = require('./package.json');
 
 const { port, secret } = config;
 const app = express();
+const { connect } = require('./connect');
 
 app.set('config', config);
 app.set('pkg', pkg);
@@ -30,18 +31,20 @@ routes(app, (err) => {
   });
 });
 
-const client = new MongoClient(config.dbUrl);
+connect();
 
-async function run() {
-  try {
-    const database = client.db('burger-queen');
-    const users = database.collection('myCollection');
-    const query = { human: 'marissa' };
-    const user = await users.findOne(query);
-    console.log(user);
-  } finally {
-    await client.close();
-  }
-}
+// const client = new MongoClient(config.dbUrl);
 
-run().catch(console.dir); 
+// async function run() {
+//   try {
+//     const database = client.db('burger-queen');
+//     const users = database.collection('myCollection');
+//     const query = { human: 'marissa' };
+//     const user = await users.findOne(query);
+//     console.log(user);
+//   } finally {
+//     await client.close();
+//   }
+// }
+
+// run().catch(console.dir);

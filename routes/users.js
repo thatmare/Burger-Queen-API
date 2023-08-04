@@ -1,53 +1,29 @@
 const bcrypt = require('bcrypt');
-const mongoose = require('mongoose');
-
-const {
-  requireAuth,
-  requireAdmin,
-} = require('../middleware/auth');
-
-const {
-  getUsers,
-} = require('../controller/users');
-const { MongoClient } = require('mongodb');
-
-const userSchema = new mongoose.Schema({
-  email: { type: String, required: true },
-  password: { type: String, required: true },
-  role: { type: String, required: false },
-});
-
-const User = mongoose.model('User', userSchema);
+const { User } = require('../models/Users');
+const { requireAuth, requireAdmin } = require('../middleware/auth');
+const { getUsers } = require('../controller/users');
 
 const initAdminUser = async (app, next) => {
-  const { adminEmail, adminPassword, dbUrl } = app.get('config');
+  const { adminEmail, adminPassword } = app.get('config');
   if (!adminEmail || !adminPassword) {
     return next();
   }
 
-  try {
-    const client = new MongoClient(dbUrl);
-    await client.connect();
-    const db = client.db();
-    const usersCollection = db.collection('users');
-    const adminUser = await usersCollection.findOne({ email: adminEmail });
-    console.log(adminUser, 'aqui adminuser');
+  const adminUser = {
+    email: adminEmail,
+    password: bcrypt.hashSync(adminPassword, 10),
+    role: 'admin',
+  };
 
-    if (!adminUser) {
-      const hashedPassword = await bcrypt.hash(adminPassword, 10);
-      const newAdminUser = new User({
-        email: adminEmail,
-        password: hashedPassword,
-        role: 'admin',
-      });
+  const userExists = await User.findOne({ email: adminUser.email });
 
-      await newAdminUser.save();
-      console.log('Exito');
-    } else {
-      console.log('El user ya existe');
+  if (!userExists) {
+    try {
+      const user = new User(adminUser);
+      await user.save();
+    } catch (error) {
+      console.error(error);
     }
-  } catch (err) {
-    console.error(err, 'error');
   }
 
   next();
@@ -61,7 +37,7 @@ const initAdminUser = async (app, next) => {
  * response <- middleware4 <- middleware3   <---
  *
  * la gracia es que la petición va pasando por cada una de las funciones
- * intermedias o "middlewares" hasta llegar a la función de la ruta, luego esa
+ * intermedias o 'middlewares' hasta llegar a la función de la ruta, luego esa
  * función genera la respuesta y esta pasa nuevamente por otras funciones
  * intermedias hasta responder finalmente a la usuaria.
  *
@@ -120,8 +96,7 @@ module.exports = (app, next) => {
    * @code {403} si no es ni admin o la misma usuaria
    * @code {404} si la usuaria solicitada no existe
    */
-  app.get('/users/:uid', requireAuth, (req, resp) => {
-  });
+  app.get('/users/:uid', requireAuth, (req, resp) => {});
 
   /**
    * @name POST /users
@@ -169,8 +144,7 @@ module.exports = (app, next) => {
    * @code {403} una usuaria no admin intenta de modificar sus `roles`
    * @code {404} si la usuaria solicitada no existe
    */
-  app.put('/users/:uid', requireAuth, (req, resp, next) => {
-  });
+  app.put('/users/:uid', requireAuth, (req, resp, next) => {});
 
   /**
    * @name DELETE /users
@@ -188,8 +162,7 @@ module.exports = (app, next) => {
    * @code {403} si no es ni admin o la misma usuaria
    * @code {404} si la usuaria solicitada no existe
    */
-  app.delete('/users/:uid', requireAuth, (req, resp, next) => {
-  });
+  app.delete('/users/:uid', requireAuth, (req, resp, next) => {});
 
   initAdminUser(app, next);
 };
