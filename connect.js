@@ -1,10 +1,17 @@
+const mongoose = require('mongoose');
 const config = require('./config');
 
-// eslint-disable-next-line no-unused-vars
 const { dbUrl } = config;
 
 async function connect() {
-  // TODO: Conexión a la Base de Datos
+  try {
+    await mongoose.connect(dbUrl);
+    console.log('entrando a db')
+    // const db = client.db('burger-queen');
+    // return db;
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 module.exports = { connect };
