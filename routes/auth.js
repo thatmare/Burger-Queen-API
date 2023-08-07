@@ -30,17 +30,20 @@ module.exports = (app, nextMain) => {
       const dbUser = await User.findOne({ email });
 
       if (!dbUser) {
-        resp.json({ error: 'User does not exist' }); // TODO: Manejar errores de autenticación
-      } else if (!bcrypt.compareSync(password, dbUser.password)) {
-        resp.status(404).json({ error: 'Wrong password' });
-      } else {
-        const token = jwt.sign(
-          { id: dbUser.id, email: dbUser.email },
-          secret,
-          { expiresIn: '1h' },
-        );
-        resp.status(200).json({ token });
+        return resp.status(404).json({ error: 'User does not exist' }); // TODO: Manejar errores de autenticación
       }
+
+      if (!bcrypt.compareSync(password, dbUser.password)) {
+        return resp.status(404).json({ error: 'Wrong password' });
+      }
+
+      const token = jwt.sign(
+        { id: dbUser.id, email: dbUser.email },
+        secret,
+        { expiresIn: '1h' },
+      );
+
+      return resp.status(200).json({ token });
     } catch (error) {
       console.error(error);
     }
