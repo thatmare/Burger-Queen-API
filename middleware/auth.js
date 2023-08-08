@@ -18,18 +18,20 @@ module.exports = (secret) => (req, resp, next) => {
       return next(403);
     }
 
+    req.decodedToken = decodedToken;
+    next();
     // TODO: Verificar identidad del usuario usando `decodeToken.uid`
   });
 };
 
 module.exports.isAuthenticated = (req) => (
   // TODO: decidir por la informacion del request si la usuaria esta autenticada
-  false
+  req.decodedToken
 );
 
 module.exports.isAdmin = (req) => (
   // TODO: decidir por la informacion del request si la usuaria es admin
-  false
+  req.decodedToken.role === 'admin'
 );
 
 module.exports.requireAuth = (req, resp, next) => (

@@ -28,6 +28,7 @@ module.exports = (app, nextMain) => {
 
     try {
       const dbUser = await User.findOne({ email });
+      console.log(dbUser, 'aqui dbuser')
 
       if (!dbUser) {
         return resp.status(404).json({ error: 'User does not exist' }); // TODO: Manejar errores de autenticación
@@ -38,7 +39,7 @@ module.exports = (app, nextMain) => {
       }
 
       const token = jwt.sign(
-        { id: dbUser.id, email: dbUser.email },
+        { uid: dbUser.id, email: dbUser.email, role: dbUser.role },
         secret,
         { expiresIn: '1h' },
       );
