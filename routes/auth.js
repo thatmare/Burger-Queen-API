@@ -28,7 +28,6 @@ module.exports = (app, nextMain) => {
 
     try {
       const dbUser = await User.findOne({ email });
-      console.log(dbUser, 'aqui dbuser')
 
       if (!dbUser) {
         return resp.status(404).json({ error: 'User does not exist' }); // TODO: Manejar errores de autenticación

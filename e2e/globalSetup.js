@@ -86,7 +86,7 @@ const checkAdminCredentials = () => fetch('/auth', {
   })
   .then(({ token }) => Object.assign(__e2e, { adminToken: token }));
 
-const waitForServerToBeReady = (retries = 10) => new Promise((resolve, reject) => {
+const waitForServerToBeReady = (retries = 20) => new Promise((resolve, reject) => {
   if (!retries) {
     return reject(new Error('Server took too long to start'));
   }
