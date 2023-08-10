@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 const { User } = require('../models/Users');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
-const { getUsers } = require('../controller/users');
+const { getUsers, postUsers } = require('../controller/users');
 
 const initAdminUser = async (app, next) => {
   const { adminEmail, adminPassword } = app.get('config');
@@ -117,10 +117,7 @@ module.exports = (app, next) => {
    * @code {401} si no hay cabecera de autenticación
    * @code {403} si ya existe usuaria con ese `email`
    */
-  app.post('/users', requireAdmin, (req, resp, next) => {
-    // TODO: implementar la ruta para agregar
-    // nuevos usuarios
-  });
+  app.post('/users', requireAdmin, postUsers);
 
   /**
    * @name PUT /users
