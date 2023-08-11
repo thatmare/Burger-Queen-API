@@ -1,7 +1,9 @@
 const bcrypt = require('bcrypt');
 const { User } = require('../models/Users');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
-const { getUsers, postUsers } = require('../controller/users');
+const {
+  getUsers, postUsers, getUser, patchUser, deleteUser,
+} = require('../controller/users');
 
 const initAdminUser = async (app, next) => {
   const { adminEmail, adminPassword } = app.get('config');
@@ -96,7 +98,7 @@ module.exports = (app, next) => {
    * @code {403} si no es ni admin o la misma usuaria
    * @code {404} si la usuaria solicitada no existe
    */
-  app.get('/users/:uid', requireAuth, (req, resp) => {});
+  app.get('/users/:uid', requireAuth, getUser);
 
   /**
    * @name POST /users
@@ -141,7 +143,7 @@ module.exports = (app, next) => {
    * @code {403} una usuaria no admin intenta de modificar sus `roles`
    * @code {404} si la usuaria solicitada no existe
    */
-  app.put('/users/:uid', requireAuth, (req, resp, next) => {});
+  app.patch('/users/:uid', requireAuth, patchUser);
 
   /**
    * @name DELETE /users
@@ -159,7 +161,7 @@ module.exports = (app, next) => {
    * @code {403} si no es ni admin o la misma usuaria
    * @code {404} si la usuaria solicitada no existe
    */
-  app.delete('/users/:uid', requireAuth, (req, resp, next) => {});
+  app.delete('/users/:uid', requireAuth, deleteUser);
 
   initAdminUser(app, next);
 };

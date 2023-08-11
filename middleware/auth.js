@@ -30,8 +30,7 @@ module.exports.isAuthenticated = (req) => (
 );
 
 module.exports.isAdmin = (req) => (
-  // TODO: decidir por la informacion del request si la usuaria es admin
-  req.decodedToken.role === 'admin'
+  req.decodedToken && req.decodedToken.role === 'admin'
 );
 
 module.exports.requireAuth = (req, resp, next) => (
