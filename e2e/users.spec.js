@@ -46,7 +46,6 @@ describe('GET /users', () => {
       })
       .then(({ headers, json }) => {
         const linkHeader = parseLinkHeader(headers.get('link'));
-
         const nextUrlObj = url.parse(linkHeader.next);
         const lastUrlObj = url.parse(linkHeader.last);
         const nextQuery = qs.parse(nextUrlObj.query);
@@ -58,6 +57,7 @@ describe('GET /users', () => {
         expect(lastQuery.page >= 2).toBe(true);
 
         expect(Array.isArray(json)).toBe(true);
+        console.log(json, 'aqui JSON!!!!')
         expect(json.length).toBe(1);
         expect(json[0]).toHaveProperty('_id');
         expect(json[0]).toHaveProperty('email');

@@ -9,33 +9,20 @@ module.exports = {
       const page = Number(req.query.page) || 1;
       const limit = Number(req.query.limit) || 10;
       const startIndex = (page - 1) * limit;
-      const endIndex = page * limit;
+      const usersCollection = await User.find().limit(limit).skip(startIndex);
+      const totalUsers = await User.countDocuments();
+      const totalPages = Math.ceil(totalUsers / limit);
 
-      const userCol = await User.find();
-      const results = userCol.slice(startIndex, endIndex);
+      const linkHeaders = {
+        first: `</users?page=1&limit=${limit}>; rel="first"`,
+        prev: `</users?page=${page - 1}&limit=${limit}>; rel="prev"`,
+        next: `</users?page=${page + 1}&limit=${limit}>; rel="next"`,
+        last: `</users?page=${totalPages}&limit=${limit}>; rel="last"`, // aqui se detiene
+      };
 
-      if (endIndex < userCol.length) {
-        const next = {
-          next: {
-            page: page + 1,
-            limit,
-          },
-        };
+      resp.set('link', Object.values(linkHeaders).join(', '));
 
-        results.push(next);
-      }
-
-      if (startIndex > 0) {
-        const previous = {
-          previous: {
-            page: page - 1,
-            limit,
-          },
-        };
-        results.push(previous);
-      }
-
-      return resp.status(200).json(results);
+      return resp.status(200).json(usersCollection);
     } catch (err) {
       console.error(err);
       resp
@@ -58,13 +45,13 @@ module.exports = {
       role: req.body.role,
     });
 
+    const existingUser = await User.findOne({ email: req.body.email });
+
+    if (existingUser) {
+      return resp.status(403).json({ error: 'User already exists' });
+    }
+
     try {
-      const existingUser = await User.findOne({ email: req.body.email });
-
-      if (existingUser) {
-        return resp.status(403).json({ error: 'User already exists' });
-      }
-
       const savedUser = await newUser.save();
 
       resp.status(200).json(savedUser);
